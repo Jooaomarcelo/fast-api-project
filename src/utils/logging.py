@@ -9,7 +9,7 @@ def setup_logging():
     """
     logging.basicConfig(
         level=logging.INFO if settings.env == "production" else logging.DEBUG,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        format="%(levelname)s - %(asctime)s - %(name)s - %(message)s",
     )
 
     # Silenciar logs verbosos do pymongo
