@@ -1,3 +1,5 @@
+"""User models module."""
+
 from datetime import datetime
 
 from bson import ObjectId
@@ -8,6 +10,8 @@ from .enums import UserRole
 
 
 class User(MongoBaseModel):
+    """User model stored in database."""
+
     username: str
     full_name: str
     email: EmailStr
@@ -16,6 +20,8 @@ class User(MongoBaseModel):
 
 
 class UserCreate(CustomBaseModel):
+    """User creation model with password validation."""
+
     username: str
     full_name: str
     email: EmailStr
@@ -26,11 +32,15 @@ class UserCreate(CustomBaseModel):
 
 
 class UserIn(CustomBaseModel):
+    """User input data model for authentication."""
+
     email: EmailStr
     password: str
 
 
 class UserOut(User):
+    """User output data model (without password)."""
+
     id: ObjectId | None = Field(default=None, alias="_id")
 
     username: str
@@ -46,6 +56,8 @@ class UserOut(User):
 
 
 class UserUpdatePass(CustomBaseModel):
+    """Model for user password update."""
+
     old_password: str
     new_password: str = Field(min_length=8)
     confirmation_password: str = Field(min_length=8)

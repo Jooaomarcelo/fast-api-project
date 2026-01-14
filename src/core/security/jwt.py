@@ -1,3 +1,5 @@
+"""Module for JWT operations (token creation and decoding)."""
+
 from datetime import timedelta
 
 from jwt import ExpiredSignatureError, InvalidTokenError, PyJWT
@@ -9,7 +11,13 @@ from src.utils.date_now import get_utc_now
 
 
 def sign_jwt(data: dict) -> str:
-    """Sign a JWT token with the given data."""
+    """Create and sign a JWT token with the provided data.
+
+    :param data: Data to be encoded in the token
+    :type data: dict
+    :return: Signed JWT token
+    :rtype: str
+    """
     to_encode = data.copy()
     jwt_instance = PyJWT()
 

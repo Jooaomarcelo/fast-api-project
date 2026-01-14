@@ -1,3 +1,5 @@
+"""Application exception and error handling module."""
+
 import logging
 import traceback
 
@@ -14,7 +16,13 @@ logger = logging.getLogger("error_controller")
 
 
 def send_error_dev(exc: AppError) -> JSONResponse:
-    """Send detailed error response in development environment."""
+    """Send detailed error response in development environment.
+
+    :param exc: Application exception
+    :type exc: AppError
+    :return: JSON response with error details
+    :rtype: JSONResponse
+    """
     return JSONResponse(
         status_code=exc.status_code,
         content=jsonable_encoder(
@@ -29,7 +37,13 @@ def send_error_dev(exc: AppError) -> JSONResponse:
 
 
 def send_error_prod(exc: AppError) -> JSONResponse:
-    """Send sanitized error response in production environment."""
+    """Send sanitized error response in production environment.
+
+    :param exc: Application exception
+    :type exc: AppError
+    :return: JSON response with sanitized error
+    :rtype: JSONResponse
+    """
     if exc.is_operational:
         return JSONResponse(
             status_code=exc.status_code,

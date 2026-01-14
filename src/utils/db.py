@@ -1,3 +1,5 @@
+"""MongoDB database connection utilities module."""
+
 import logging
 
 from pymongo import AsyncMongoClient

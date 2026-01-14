@@ -1,3 +1,5 @@
+"""Base models module for the entire application."""
+
 from datetime import datetime
 from decimal import Decimal
 
@@ -6,6 +8,8 @@ from pydantic import BaseModel, ConfigDict
 
 
 class CustomBaseModel(BaseModel):
+    """Custom base model with default Pydantic configurations."""
+
     model_config = ConfigDict(
         populate_by_name=True,
         str_strip_whitespace=True,

@@ -1,3 +1,5 @@
+"""Authentication services module."""
+
 from bson import ObjectId
 from pymongo.asynchronous.database import AsyncDatabase
 
@@ -13,6 +15,18 @@ async def authenticate_user(
     password: str,
     db: AsyncDatabase,
 ) -> str:
+    """Authenticate a user and return a JWT token.
+
+    :param email: User email
+    :type email: str
+    :param password: User password
+    :type password: str
+    :param db: Database connection
+    :type db: AsyncDatabase
+    :return: JWT authentication token
+    :rtype: str
+    :raises AppError: If credentials are invalid
+    """
     user = await db.get_collection("users").find_one({"email": email})
 
     if not user or not verify_password(password, user["password"]):
@@ -22,6 +36,16 @@ async def authenticate_user(
 
 
 async def get_current_user(token: str, db: AsyncDatabase):
+    """Get authenticated user data from token.
+
+    :param token: JWT authentication token
+    :type token: str
+    :param db: Database connection
+    :type db: AsyncDatabase
+    :return: Authenticated user data
+    :rtype: dict
+    :raises AppError: If token is invalid or user not found
+    """
     token_data = decode_jwt(token)
 
     if not token_data:
@@ -42,6 +66,16 @@ async def get_current_user(token: str, db: AsyncDatabase):
 
 
 async def signup_user(user: UserCreate, db: AsyncDatabase):
+    """Create a new user in the system.
+
+    :param user: User data to be created
+    :type user: UserCreate
+    :param db: Database connection
+    :type db: AsyncDatabase
+    :return: Created user data
+    :rtype: dict
+    :raises AppError: If email already exists or passwords don't match
+    """
     existing = await db.get_collection("users").find_one({"email": user.email})
 
     if existing:

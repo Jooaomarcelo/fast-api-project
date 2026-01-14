@@ -1,11 +1,15 @@
+"""Application logging configuration module."""
+
 import logging
 
 from ..core.config import settings
 
 
 def setup_logging():
-    """
-    Configure logging for the application.
+    """Configure the application logging system.
+
+    :return: Configured logger
+    :rtype: logging.Logger
     """
     logging.basicConfig(
         level=logging.INFO if settings.env == "production" else logging.DEBUG,

@@ -1,3 +1,5 @@
+"""Module for password hashing and verification operations using Argon2."""
+
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 
@@ -5,7 +7,15 @@ ph = PasswordHasher()
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a plain password against its hashed version."""
+    """Verify if a plain password matches the hash.
+
+    :param plain_password: Plain text password
+    :type plain_password: str
+    :param hashed_password: Hashed password
+    :type hashed_password: str
+    :return: True if password matches the hash, False otherwise
+    :rtype: bool
+    """
     try:
         ph.verify(hashed_password, plain_password)
         return True
@@ -14,5 +24,11 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 def get_password_hash(password: str) -> str:
-    """Hash a plain password."""
+    """Generate a password hash using Argon2.
+
+    :param password: Plain text password
+    :type password: str
+    :return: Password hash
+    :rtype: str
+    """
     return ph.hash(password)
