@@ -5,7 +5,7 @@ from pymongo import AsyncMongoClient
 from .core.config import settings
 from .core.security.dependencies import protect
 from .exceptions.error_handler import handle_exceptions
-from .routers import auth_router
+from .routers import auth_router, user_router
 from .utils.db import close_pool, create_pool, get_conn
 from .utils.logging import setup_logging
 
@@ -34,6 +34,7 @@ handle_exceptions(app)
 
 # Register routers
 app.include_router(auth_router)
+app.include_router(user_router, dependencies=[Depends(protect)])
 
 app.mount("/api/v1", app)
 

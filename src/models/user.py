@@ -64,3 +64,7 @@ class UserUpdatePass(CustomBaseModel):
 	old_password: str
 	new_password: str = Field(min_length=8)
 	confirmation_password: str = Field(min_length=8)
+
+	model_config = ConfigDict(
+		arbitrary_types_allowed=True,
+	)

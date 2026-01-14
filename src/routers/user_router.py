@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from pymongo.asynchronous.database import AsyncDatabase
 
-from src.core.security.dependencies import protect, require_role
+from src.core.security.dependencies import require_role
 from src.models.user import User, UserOut, UserUpdatePass
 from src.repos import user_repo
 from src.services import user_service
@@ -52,7 +52,6 @@ async def read_user_by_id(
 @router.patch("update-password", response_model=UserOut)
 async def update_user_password(
 	user_update: UserUpdatePass,
-	user: User = Depends(protect),
 	db: AsyncDatabase = Depends(get_conn),
 ):
 	"""Endpoint to update the password of the current authenticated user.

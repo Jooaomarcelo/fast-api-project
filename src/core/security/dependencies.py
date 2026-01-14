@@ -24,7 +24,6 @@ async def protect(
 	:raises HTTPException: If user not found or invalid token
 	"""
 	token_data = decode_jwt(token)
-	print(token_data.model_dump())
 
 	user = await db.users.find_one({"_id": ObjectId(token_data.id)})
 
