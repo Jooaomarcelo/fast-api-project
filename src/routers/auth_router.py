@@ -15,60 +15,60 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/login", response_model=Token)
 async def login(
-    form_data: OAuth2PasswordRequestForm = Depends(),
-    db: AsyncDatabase = Depends(get_conn),
+	form_data: OAuth2PasswordRequestForm = Depends(),
+	db: AsyncDatabase = Depends(get_conn),
 ):
-    """Login endpoint that returns an access token.
+	"""Login endpoint that returns an access token.
 
-    :param form_data: Form data with email and password
-    :type form_data: OAuth2PasswordRequestForm
-    :param db: Database connection
-    :type db: AsyncDatabase
-    :return: Access token and token type
-    :rtype: Token
-    """
-    access_token = await auth_service.authenticate_user(
-        email=form_data.username,
-        password=form_data.password,
-        db=db,
-    )
+	:param form_data: Form data with email and password
+	:type form_data: OAuth2PasswordRequestForm
+	:param db: Database connection
+	:type db: AsyncDatabase
+	:return: Access token and token type
+	:rtype: Token
+	"""
+	access_token = await auth_service.authenticate_user(
+		email=form_data.username,
+		password=form_data.password,
+		db=db,
+	)
 
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-    }
+	return {
+		"access_token": access_token,
+		"token_type": "bearer",
+	}
 
 
 @router.post("/signup", response_model=UserOut)
 async def signup(
-    user: UserCreate,
-    db: AsyncDatabase = Depends(get_conn),
+	user: UserCreate,
+	db: AsyncDatabase = Depends(get_conn),
 ):
-    """User registration endpoint.
+	"""User registration endpoint.
 
-    :param user: User data to be created
-    :type user: UserCreate
-    :param db: Database connection
-    :type db: AsyncDatabase
-    :return: Created user data
-    :rtype: UserOut
-    """
-    user_out = await auth_service.signup_user(user, db)
-    return user_out
+	:param user: User data to be created
+	:type user: UserCreate
+	:param db: Database connection
+	:type db: AsyncDatabase
+	:return: Created user data
+	:rtype: UserOut
+	"""
+	user_out = await auth_service.signup_user(user, db)
+	return user_out
 
 
 @router.get("/me", response_model=UserOut)
 async def read_users_me(
-    token: str = Depends(oauth2_scheme),
-    db: AsyncDatabase = Depends(get_conn),
+	token: str = Depends(oauth2_scheme),
+	db: AsyncDatabase = Depends(get_conn),
 ):
-    """Endpoint that returns authenticated user data.
+	"""Endpoint that returns authenticated user data.
 
-    :param token: JWT authentication token
-    :type token: str
-    :param db: Database connection
-    :type db: AsyncDatabase
-    :return: Authenticated user data
-    :rtype: UserOut
-    """
-    return await auth_service.get_current_user(token, db)
+	:param token: JWT authentication token
+	:type token: str
+	:param db: Database connection
+	:type db: AsyncDatabase
+	:return: Authenticated user data
+	:rtype: UserOut
+	"""
+	return await auth_service.get_current_user(token, db)

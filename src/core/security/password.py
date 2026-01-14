@@ -6,6 +6,17 @@ from argon2.exceptions import VerifyMismatchError
 ph = PasswordHasher()
 
 
+def verify_need_rehash(hashed_password: str) -> bool:
+    """Check if a hashed password needs to be rehashed.
+
+    :param hashed_password: Hashed password
+    :type hashed_password: str
+    :return: True if the password needs rehashing, False otherwise
+    :rtype: bool
+    """
+    return ph.check_needs_rehash(hashed_password)
+
+
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify if a plain password matches the hash.
 

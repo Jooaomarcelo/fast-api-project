@@ -3,7 +3,7 @@
 import logging
 import traceback
 
-from fastapi import HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -67,77 +67,85 @@ def send_error_prod(exc: AppError) -> JSONResponse:
         )
 
 
-async def app_error_controller(request: Request, exc: Exception):
+def handle_exceptions(app: FastAPI):
+    """Register exception handlers with the FastAPI application.
+
+    :param app: FastAPI application instance
+    :type app: FastAPI
     """
-    Controller to handle application-specific errors.
 
-    :param request: Incoming request object
-    :type request: Request
-    :param exc: Application error exception
-    :type exc: Exception
-    :return: JSON response with error details
-    :rtype: JSONResponse
-    """
-    app_error = AppError(
-        status_code=getattr(exc, "status_code", 500),
-        message=getattr(exc, "message", "An unexpected error occurred."),
-    )
-    logger.error(str(app_error))
+    @app.exception_handler(AppError)
+    async def app_error_controller(request: Request, exc: Exception):
+        """
+        Controller to handle application-specific errors.
 
-    if settings.env == "development":
-        return send_error_dev(app_error)
-    else:
-        return send_error_prod(app_error)
+        :param request: Incoming request object
+        :type request: Request
+        :param exc: Application error exception
+        :type exc: Exception
+        :return: JSON response with error details
+        :rtype: JSONResponse
+        """
+        app_error = AppError(
+            status_code=getattr(exc, "status_code", 500),
+            message=getattr(exc, "message", "An unexpected error occurred."),
+        )
+        logger.error(str(app_error))
 
+        if settings.env == "development":
+            return send_error_dev(app_error)
+        else:
+            return send_error_prod(app_error)
 
-async def http_exception_controller(
-    request: Request, exc: HTTPException | StarletteHTTPException
-):
-    """
-    Controller to handle HTTP exceptions.
+    @app.exception_handler(StarletteHTTPException)
+    async def http_exception_controller(
+        request: Request, exc: HTTPException | StarletteHTTPException
+    ):
+        """
+        Controller to handle HTTP exceptions.
 
-    :param request: Incoming request object
-    :type request: Request
-    :param exc: HTTP exception
-    :type exc: Exception
-    :return: JSON response with error details
-    :rtype: JSONResponse
-    """
-    app_error = AppError(
-        status_code=getattr(exc, "status_code", 500),
-        message=getattr(exc, "detail", "An HTTP error occurred."),
-    )
+        :param request: Incoming request object
+        :type request: Request
+        :param exc: HTTP exception
+        :type exc: Exception
+        :return: JSON response with error details
+        :rtype: JSONResponse
+        """
+        app_error = AppError(
+            status_code=getattr(exc, "status_code", 500),
+            message=getattr(exc, "detail", "An HTTP error occurred."),
+        )
 
-    if settings.env == "development":
-        return send_error_dev(app_error)
-    else:
-        return send_error_prod(app_error)
+        if settings.env == "development":
+            return send_error_dev(app_error)
+        else:
+            return send_error_prod(app_error)
 
+    @app.exception_handler(RequestValidationError)
+    async def validation_exception_controller(
+        request: Request, exc: RequestValidationError
+    ):
+        """
+        Controller to handle validation exceptions.
 
-async def validation_exception_controller(
-    request: Request, exc: RequestValidationError
-):
-    """
-    Controller to handle validation exceptions.
+        :param request: Incoming request object
+        :type request: Request
+        :param exc: Validation exception
+        :type exc: Exception
+        :return: JSON response with error details
+        :rtype: JSONResponse
+        """
+        print(await request.body())
+        messages = [f"{err['loc'][-1]}: {err['msg']}" for err in exc.errors()]
 
-    :param request: Incoming request object
-    :type request: Request
-    :param exc: Validation exception
-    :type exc: Exception
-    :return: JSON response with error details
-    :rtype: JSONResponse
-    """
-    print(await request.body())
-    messages = [f"{err['loc'][-1]}: {err['msg']}" for err in exc.errors()]
+        message = "Validation error: " + "; ".join(messages)
 
-    message = "Validation error: " + "; ".join(messages)
+        app_error = AppError(
+            status_code=getattr(exc, "status_code", 422),
+            message=message,
+        )
 
-    app_error = AppError(
-        status_code=getattr(exc, "status_code", 422),
-        message=message,
-    )
-
-    if settings.env == "development":
-        return send_error_dev(app_error)
-    else:
-        return send_error_prod(app_error)
+        if settings.env == "development":
+            return send_error_dev(app_error)
+        else:
+            return send_error_prod(app_error)
