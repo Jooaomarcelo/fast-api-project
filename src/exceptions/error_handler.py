@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from src.core.config import settings
-from src.core.errors import AppError
+from src.utils.app_error import AppError
 
 logger = logging.getLogger("error_controller")
 
@@ -64,15 +64,16 @@ async def app_error_controller(request: Request, exc: Exception):
     :return: JSON response with error details
     :rtype: JSONResponse
     """
-    exc.status_code = getattr(exc, "status_code", 500)
-    exc.status = getattr(exc, "status", "error")
-    exc.message = getattr(exc, "message", "An unexpected error occurred.")
-    logger.error(str(exc))
+    app_error = AppError(
+        status_code=getattr(exc, "status_code", 500),
+        message=getattr(exc, "message", "An unexpected error occurred."),
+    )
+    logger.error(str(app_error))
 
     if settings.env == "development":
-        return send_error_dev(exc)
+        return send_error_dev(app_error)
     else:
-        return send_error_prod(exc)
+        return send_error_prod(app_error)
 
 
 async def http_exception_controller(
@@ -88,15 +89,15 @@ async def http_exception_controller(
     :return: JSON response with error details
     :rtype: JSONResponse
     """
-    exc.status_code = getattr(exc, "status_code", 500)
-    exc.status = "error"
-    exc.message = getattr(exc, "detail", "An unexpected HTTP error occurred.")
-    exc.is_operational = True
+    app_error = AppError(
+        status_code=getattr(exc, "status_code", 500),
+        message=getattr(exc, "detail", "An HTTP error occurred."),
+    )
 
     if settings.env == "development":
-        return send_error_dev(exc)
+        return send_error_dev(app_error)
     else:
-        return send_error_prod(exc)
+        return send_error_prod(app_error)
 
 
 async def validation_exception_controller(
@@ -112,16 +113,17 @@ async def validation_exception_controller(
     :return: JSON response with error details
     :rtype: JSONResponse
     """
-    exc.status_code = 400
-    exc.status = "error"
-    exc.is_operational = True
+    print(await request.body())
+    messages = [f"{err['loc'][-1]}: {err['msg']}" for err in exc.errors()]
 
-    errors = exc.errors()
-    exc.message = f"{len(errors)} validation error(s).\n"
-    for error in errors:
-        exc.message += f"Field '{error['loc'][-1]}': {error['msg']}\n"
+    message = "Validation error: " + "; ".join(messages)
+
+    app_error = AppError(
+        status_code=getattr(exc, "status_code", 422),
+        message=message,
+    )
 
     if settings.env == "development":
-        return send_error_dev(exc)
+        return send_error_dev(app_error)
     else:
-        return send_error_prod(exc)
+        return send_error_prod(app_error)

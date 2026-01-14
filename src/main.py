@@ -1,14 +1,17 @@
 from fastapi import Depends, FastAPI
 from fastapi.exceptions import RequestValidationError
 from pydantic import BaseModel
+from pymongo import AsyncMongoClient
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from .controllers.error_controller import (
+from .core.config import settings
+from .core.security.dependencies import get_current_user
+from .exceptions.error_handler import (
     app_error_controller,
     http_exception_controller,
     validation_exception_controller,
 )
-from .core.config import settings
+from .routers import auth_router
 from .utils.db import close_pool, create_pool, get_conn
 from .utils.logging import setup_logging
 
@@ -37,6 +40,11 @@ app.add_exception_handler(StarletteHTTPException, http_exception_controller)
 app.add_exception_handler(RequestValidationError, validation_exception_controller)
 app.add_exception_handler(Exception, app_error_controller)
 
+# Register routers
+app.include_router(auth_router)
+
+app.mount("/api/v1", app)
+
 
 class Dummy(BaseModel):
     id: int
@@ -44,7 +52,7 @@ class Dummy(BaseModel):
 
 
 @app.get("/")
-async def read_root(db=Depends(get_conn)):
+async def read_root(db: AsyncMongoClient = Depends(get_conn)):
     """
     Health check endpoint to verify the application is running.
 
@@ -54,8 +62,8 @@ async def read_root(db=Depends(get_conn)):
     return {"status": "200", "message": "API is running", "environment": settings.env}
 
 
-@app.post("/dummys")
-async def create_dummy(dummy: Dummy, db=Depends(get_conn)):
+@app.post("/dummys/")
+async def create_dummy(dummy: Dummy, db: AsyncMongoClient = Depends(get_conn)):
     """
     Dummy endpoint to test database connection.
 
@@ -63,3 +71,19 @@ async def create_dummy(dummy: Dummy, db=Depends(get_conn)):
     :rtype: Dummy
     """
     return dummy
+
+
+# Test protected route
+@app.get("/dummys-protected/")
+async def protected_route(user=Depends(get_current_user)):
+    """
+    Protected route that requires authentication.
+
+    :param token: JWT token for authentication
+    :type token: str
+    :param db: Database connection
+    :type db: AsyncMongoClient
+    :return: Success message
+    :rtype: dict
+    """
+    return {"message": "You are authenticated!"}

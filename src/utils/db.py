@@ -63,4 +63,4 @@ async def get_conn(request: Request):
     :return: MongoDB client instance
     :rtype: AsyncMongoClient
     """
-    return request.app.state.pool
+    return request.app.state.pool.get_database("dummy")

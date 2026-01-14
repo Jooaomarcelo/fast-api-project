@@ -11,6 +11,8 @@ dependencies = [
     "pyjwt[crypto]>=2.10.1",
     "argon2-cffi>=25.1.0",
     "pydantic-settings>=2.12.0",
+    "pydantic[email]>=2.12.5",
+    "python-multipart>=0.0.21",
 ]
 
 [dependency-groups]
